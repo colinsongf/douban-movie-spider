@@ -5,6 +5,7 @@ from urllib import request
 import pymongo
 
 
+# 获取url的html内容
 def get_html(url):
     headers = {
         'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/48.'
@@ -23,8 +24,28 @@ def get_html(url):
     return html
 
 
+# 从列表页获取所有电影的url，写入urls.txt
+def get_urls():
+    n = 1
+    pages = 34
+    f = open('urls.txt', 'w+')
+    for i in range(pages):
+        if i == 0:
+            url = 'https://www.douban.com/tag/2014/movie'
+        else:
+            url = 'https://www.douban.com/tag/2014/movie?start=' + str(15*i)
+        html = get_html(url)
+        time.sleep(2)
+        pattern = re.compile('<dd>.*?<a href="(.*?)" class="title" target="_blank">', re.S)
+        mains = re.findall(pattern, html)
+        for main in mains:
+            f.write(main + '\n')
+            n += 1
+    
+        
+# 到每个电影的主页爬取信息
 def crawler():
-    n = 203
+    n = 1
     for line in open('urls.txt'):
         html = get_html(line).decode('utf-8')
         pattern = re.compile('"v:itemreviewed">(.*?)</span>.*?'
@@ -41,7 +62,7 @@ def crawler():
         director = re.findall(pattern_director, html)
         average = re.findall(pattern_average, html)
         votes = re.findall(pattern_votes, html)
-        actors = re.findall(pattern_actors, html)       # 有些没有演员…
+        actors = re.findall(pattern_actors, html)       # 有些电影没有  演员|评分|导演|评分&评价人数|语言
         genres = re.findall(pattern_genres, html)
         values = {}
         conn = pymongo.MongoClient('localhost', 27017)
@@ -71,6 +92,7 @@ def crawler():
         time.sleep(2)
 
 
+# 库的查询
 def lookup():
     connection = pymongo.MongoClient('localhost', 27017)
     db = connection.movie
@@ -79,8 +101,8 @@ def lookup():
         print(item['title'])
     # db.info.remove()
     # print(info.find().count())
-start = time.time()
+# start = time.time()
 # crawler()
-end = time.time()
+# end = time.time()
 # print('time:%ds' % (end - start))
 # lookup()
