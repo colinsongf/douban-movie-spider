@@ -101,8 +101,12 @@ def lookup():
         print(item['title'])
     # db.info.remove()
     # print(info.find().count())
+    
+# get_urls()
+
 # start = time.time()
 # crawler()
 # end = time.time()
 # print('time:%ds' % (end - start))
+
 # lookup()
